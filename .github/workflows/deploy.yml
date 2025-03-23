@@ -28,7 +28,7 @@ jobs:
           cp main.pdf deploy/
 
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: main-pdf
           path: deploy/main.pdf
