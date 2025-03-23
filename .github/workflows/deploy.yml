@@ -1,8 +1,4 @@
-name: Build and Deploy LaTeX PDF
-
-permissions:
-  contents: write
-  pages: write
+name: Build LaTeX PDF and Upload Artifact
 
 on:
   push:
@@ -28,42 +24,8 @@ jobs:
           mkdir -p deploy
           cp main.pdf deploy/
 
-  deploy-gh-pages:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy PDF to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload PDF Artifact
+        uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.LATEX_TOKEN }}
-          publish_dir: ./deploy
-
-  deploy-release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-      - name: Upload PDF as Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./deploy/main.pdf
-          asset_name: main.pdf
-          asset_content_type: application/pdf
+          name: latex-pdf
+          path: deploy/main.pdf
