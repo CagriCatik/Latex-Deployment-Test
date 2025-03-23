@@ -1,5 +1,9 @@
 name: Build and Deploy LaTeX PDF
 
+permissions:
+  contents: write
+  pages: write
+
 on:
   push:
     branches:
@@ -35,7 +39,7 @@ jobs:
       - name: Deploy PDF to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.DOCUSAURUS_TOKEN }}
+          github_token: ${{ secrets.LATEX_TOKEN }}
           publish_dir: ./deploy
 
   deploy-release:
@@ -47,7 +51,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.DOCUSAURUS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
@@ -57,7 +61,7 @@ jobs:
       - name: Upload PDF as Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.DOCUSAURUS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./deploy/main.pdf
