@@ -1,4 +1,7 @@
-name: Build LaTeX PDF and Upload Artifact
+name: Build and Deploy LaTeX PDF
+
+permissions:
+  contents: write
 
 on:
   push:
@@ -24,8 +27,34 @@ jobs:
           mkdir -p deploy
           cp main.pdf deploy/
 
-      - name: Upload PDF Artifact
-        uses: actions/upload-artifact@v3.1.2
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: latex-pdf
+          name: main-pdf
           path: deploy/main.pdf
+
+  deploy-release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload PDF as Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.LATEX_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./deploy/main.pdf
+          asset_name: main.pdf
+          asset_content_type: application/pdf
